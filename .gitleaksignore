@@ -1,0 +1,26 @@
+# .gitleaksignore — SHA-256 fingerprint allowlist for Gitleaks
+#
+# This file lists findings that are intentional, well-known default
+# credentials for a local-only lab stack.  They are documented in
+# README.md and .env.example as requiring replacement before any
+# non-local deployment.
+#
+# Path- and regex-based allowlist rules are configured in .gitleaks.toml.
+# Add SHA-256 fingerprints here when `gitleaks detect` reports a finding
+# you have verified as a known false positive:
+#
+#   gitleaks detect --report-format json --report-path findings.json
+#   # Copy the "Fingerprint" field value from each false-positive entry
+#   # in findings.json and paste it below, with a descriptive comment.
+#
+# ─── Known default credentials covered by .gitleaks.toml allowlist rules ──────
+#
+#   File              Variable / key                  Default value   Reason
+#   ─────────────────────────────────────────────────────────────────────────
+#   .env.example      GRAFANA_ADMIN_USER              admin           Grafana local default; documented to change
+#   .env.example      GRAFANA_ADMIN_PASSWORD          grafana         Grafana local default; documented to change
+#   docker-compose.yml GF_SECURITY_ADMIN_PASSWORD     ${VAR:-grafana} Inherits .env.example default
+#
+# ─── Fingerprints ─────────────────────────────────────────────────────────────
+#
+# (Add SHA-256 fingerprints from `gitleaks detect` output here as needed.)

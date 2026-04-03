@@ -1,0 +1,106 @@
+name: Security
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  schedule:
+    # Run every Monday at 06:00 UTC to catch newly published CVEs.
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 1. Secret scanning
+  #    Gitleaks scans all commits/files for accidentally committed secrets.
+  # ──────────────────────────────────────────────────────────────────────────
+  secret-scan:
+    name: Secret scanning (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so Gitleaks can scan every commit.
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 2. Container image vulnerability scanning (Trivy)
+  #    Scans the Docker images declared in docker-compose.yml for known CVEs.
+  # ──────────────────────────────────────────────────────────────────────────
+  trivy-scan:
+    name: Container vulnerability scan (Trivy)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write   # needed to upload SARIF results
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - zfnd/zebra:latest
+          - prom/prometheus:v2.51.2
+          - grafana/grafana:10.4.2
+          - prom/node-exporter:v1.7.0
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pull image
+        run: docker pull ${{ matrix.image }}
+
+      - name: Run Trivy vulnerability scanner – ${{ matrix.image }}
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ matrix.image }}
+          format: sarif
+          output: trivy-${{ strategy.job-index }}.sarif
+          severity: CRITICAL,HIGH
+          exit-code: "0"   # report but don't fail the build on findings
+
+      - name: Upload Trivy SARIF to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-${{ strategy.job-index }}.sarif
+          category: trivy-${{ matrix.image }}
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # 3. Dependency / config file audit
+  #    Trivy also scans the repo's configuration files (IaC scan) to flag
+  #    misconfigurations in docker-compose.yml and other infrastructure files.
+  # ──────────────────────────────────────────────────────────────────────────
+  trivy-config:
+    name: IaC / config misconfiguration scan (Trivy)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy config scanner
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          scan-type: config
+          scan-ref: "."
+          format: sarif
+          output: trivy-config.sarif
+          severity: CRITICAL,HIGH,MEDIUM
+          exit-code: "0"
+
+      - name: Upload Trivy config SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-config.sarif
+          category: trivy-config

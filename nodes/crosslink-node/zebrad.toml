@@ -1,0 +1,31 @@
+# Crosslink Protocol Node – zebrad.toml
+# This node tests the experimental Crosslink hybrid PoW/PoS consensus.
+# Crosslink is a Shielded Labs protocol that connects Zcash to external chains.
+#
+# For the full Crosslink implementation switch the image in docker-compose.yml to
+# shieldedlabs/zebra-crosslink:latest and refer to the Crosslink Book:
+# https://shieldedlabs.github.io/zebra-crosslink/
+
+[network]
+network = "Testnet"
+listen_addr = "0.0.0.0:18233"
+crawl_new_peer_interval = "1m 1s"
+
+[state]
+# Docker volume mount point for persistent chain state.
+cache_dir = "/home/zebra/.cache/zebra"
+
+[metrics]
+# Expose Prometheus-compatible /metrics endpoint for scraping.
+endpoint_addr = "0.0.0.0:9999"
+
+[tracing]
+# Structured log filtering; increase to "debug" for deep inspection.
+filter = "info"
+# Use 3002 to avoid colliding with the Grafana container on port 3000.
+endpoint_addr = "0.0.0.0:3002"
+
+[rpc]
+listen_addr = "0.0.0.0:18232"
+enable_cookie_auth = false
+parallel_cpu_threads = 0

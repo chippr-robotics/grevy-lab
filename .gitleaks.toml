@@ -1,0 +1,22 @@
+title = "grevy-lab Gitleaks Configuration"
+
+# The [allowlist] section below suppresses Gitleaks findings that are
+# intentional, well-known default credentials for a local-only lab stack.
+# Users are explicitly instructed in README.md and .env.example to replace
+# these values before exposing the stack outside localhost.
+[allowlist]
+  description = "Documented default credentials for local lab use"
+
+  # .env.example is a template / documentation file, not a real secrets file.
+  # Every value in it is a well-known default that must be replaced for any
+  # non-local deployment.  Suppress all findings in this file.
+  paths = [
+    '''(^|/)\.env\.example$''',
+  ]
+
+  # Suppress the Grafana default admin password wherever it appears.
+  # Value "grafana" is publicly documented; see README.md and .env.example.
+  regexes = [
+    '''GRAFANA_ADMIN_PASSWORD=grafana''',
+    '''GF_SECURITY_ADMIN_PASSWORD\s*[:=]\s*[^\n]*grafana''',
+  ]
