@@ -1,0 +1,17 @@
+# grevy-lab – Zcash Feature Chain Lab
+.env
+
+# Editor / IDE artefacts
+.DS_Store
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Build artefacts
+*.log
+*.tmp
+
+# Node.js (if any scripts are added later)
+node_modules/
