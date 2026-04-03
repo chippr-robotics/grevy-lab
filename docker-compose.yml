@@ -88,6 +88,36 @@ services:
     restart: "no"
 
   # ──────────────────────────────────────────────────────────
+  # ZSA Assets Dashboard
+  # React SPA served by nginx with API proxying to Prometheus
+  # and both Zcash nodes for live metric and RPC queries.
+  # ──────────────────────────────────────────────────────────
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    image: grevy-lab/dashboard:latest
+    container_name: dashboard
+    ports:
+      - "127.0.0.1:${DASHBOARD_PORT:-8080}:8080"
+    networks:
+      - zcash-lab
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # ──────────────────────────────────────────────────────────
   # Prometheus – metrics collection
   # ──────────────────────────────────────────────────────────
   prometheus:

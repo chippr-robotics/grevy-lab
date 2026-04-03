@@ -28,3 +28,4 @@ check_endpoint "Crosslink node metrics" "http://localhost:${CROSSLINK_METRICS_PO
 check_endpoint "Prometheus"            "http://localhost:${PROMETHEUS_PORT:-9090}/-/healthy"
 check_endpoint "Grafana"               "http://localhost:${GRAFANA_PORT:-3000}/api/health"
 check_endpoint "Node Exporter"         "http://localhost:${NODE_EXPORTER_PORT:-9100}/metrics"
+check_endpoint "Dashboard"             "http://localhost:${DASHBOARD_PORT:-8080}/healthz"

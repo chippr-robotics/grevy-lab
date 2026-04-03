@@ -32,6 +32,7 @@ get_env_port() {
 
 echo ""
 echo "[grevy-lab] Stack is up. Service endpoints:"
+echo "  Dashboard    → http://localhost:$(get_env_port DASHBOARD_PORT 8080)"
 echo "  Grafana      → http://localhost:$(get_env_port GRAFANA_PORT 3000)"
 echo "  Prometheus   → http://localhost:$(get_env_port PROMETHEUS_PORT 9090)"
 echo "  ZSA node RPC → http://localhost:$(get_env_port ZSA_RPC_PORT 18232)"
