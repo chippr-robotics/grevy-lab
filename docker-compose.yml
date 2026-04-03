@@ -16,9 +16,9 @@ services:
       - zsa-node-data:/home/zebra/.cache/zebra
       - ./nodes/zsa-node/zebrad.toml:/home/zebra/.config/zebrad.toml:ro
     ports:
-      - "${ZSA_P2P_PORT:-18233}:18233"     # Testnet P2P
-      - "${ZSA_RPC_PORT:-18232}:18232"     # Testnet RPC
-      - "${ZSA_METRICS_PORT:-9999}:9999"   # Prometheus metrics
+      - "127.0.0.1:${ZSA_P2P_PORT:-18233}:18233"     # Testnet P2P
+      - "127.0.0.1:${ZSA_RPC_PORT:-18232}:18232"     # Testnet RPC
+      - "127.0.0.1:${ZSA_METRICS_PORT:-9999}:9999"   # Prometheus metrics
     networks:
       - zcash-lab
     restart: unless-stopped
@@ -48,9 +48,9 @@ services:
       - crosslink-node-data:/home/zebra/.cache/zebra
       - ./nodes/crosslink-node/zebrad.toml:/home/zebra/.config/zebrad.toml:ro
     ports:
-      - "${CROSSLINK_P2P_PORT:-18243}:18233"     # Testnet P2P (remapped)
-      - "${CROSSLINK_RPC_PORT:-18242}:18232"     # Testnet RPC (remapped)
-      - "${CROSSLINK_METRICS_PORT:-9998}:9999"   # Prometheus metrics (remapped)
+      - "127.0.0.1:${CROSSLINK_P2P_PORT:-18243}:18233"     # Testnet P2P (remapped)
+      - "127.0.0.1:${CROSSLINK_RPC_PORT:-18242}:18232"     # Testnet RPC (remapped)
+      - "127.0.0.1:${CROSSLINK_METRICS_PORT:-9998}:9999"   # Prometheus metrics (remapped)
     networks:
       - zcash-lab
     restart: unless-stopped
@@ -104,7 +104,7 @@ services:
       - "--web.console.libraries=/usr/share/prometheus/console_libraries"
       - "--web.console.templates=/usr/share/prometheus/consoles"
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
+      - "127.0.0.1:${PROMETHEUS_PORT:-9090}:9090"
     networks:
       - zcash-lab
     restart: unless-stopped
@@ -136,8 +136,10 @@ services:
       GF_SERVER_ROOT_URL: "http://localhost:${GRAFANA_PORT:-3000}"
       GF_ANALYTICS_REPORTING_ENABLED: "false"
       GF_INSTALL_PLUGINS: ""
+    # Bind to localhost by default. To intentionally expose to the local network,
+    # set GRAFANA_HOST=0.0.0.0 in .env and change the port binding below.
     ports:
-      - "${GRAFANA_PORT:-3000}:3000"
+      - "127.0.0.1:${GRAFANA_PORT:-3000}:3000"
     networks:
       - zcash-lab
     depends_on:
@@ -171,7 +173,7 @@ services:
       - "--path.sysfs=/host/sys"
       - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
     ports:
-      - "${NODE_EXPORTER_PORT:-9100}:9100"
+      - "127.0.0.1:${NODE_EXPORTER_PORT:-9100}:9100"
     networks:
       - zcash-lab
     restart: unless-stopped

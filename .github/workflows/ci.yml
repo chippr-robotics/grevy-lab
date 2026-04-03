@@ -39,9 +39,13 @@ jobs:
         run: python3 -c "import json, sys; json.load(open('monitoring/grafana/dashboards/zcash-overview.json')); print('Dashboard JSON OK')"
 
       # ── TOML ──────────────────────────────────────────────────────────────
+      - name: Set up Python 3.11 (for tomllib stdlib)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Validate zebrad TOML configs
         run: |
-          pip install --quiet tomllib-w || true
           python3 - <<'EOF'
           import tomllib, glob, sys
           configs = glob.glob('nodes/**/*.toml', recursive=True)
