@@ -34,9 +34,9 @@ export default function App() {
         fetchPeerHistory(1).catch(() => []),
       ]);
 
-      if (m) setMetrics(m);
-      if (zInfo) setZsaInfo(zInfo);
-      if (cInfo) setCrosslinkInfo(cInfo);
+      setMetrics(m);
+      setZsaInfo(zInfo);
+      setCrosslinkInfo(cInfo);
       setHeightHistory(hHist);
       setPeerHistory(pHist);
       setLastUpdated(Date.now());

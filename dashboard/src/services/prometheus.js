@@ -39,7 +39,7 @@ export function rangeToTimeSeries(result, labelKey = 'job') {
     series.values.forEach(([ts]) => allTimestamps.add(ts));
   });
 
-  const sorted = [...allTimestamps].sort();
+  const sorted = [...allTimestamps].sort((a, b) => a - b);
   return sorted.map((ts) => {
     const point = { time: ts * 1000 };
     result.forEach((series) => {
