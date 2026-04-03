@@ -4,7 +4,7 @@
 COMPOSE = docker compose
 COMPOSE_FILE = docker-compose.yml
 
-.PHONY: help up down restart logs status pull clean
+.PHONY: help up down restart logs logs-dashboard status pull clean
 
 ## Show this help message.
 help:
@@ -42,6 +42,10 @@ logs-zsa:
 ## Tail Crosslink-node logs.
 logs-crosslink:
 	$(COMPOSE) -f $(COMPOSE_FILE) logs -f --tail=100 crosslink-node
+
+## Tail Dashboard logs.
+logs-dashboard:
+	$(COMPOSE) -f $(COMPOSE_FILE) logs -f --tail=100 dashboard
 
 ## Show running container status and health.
 status:
