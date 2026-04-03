@@ -8,31 +8,24 @@ monitored through a Prometheus + Grafana stack.
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│  grevy-lab  (Docker network: zcash-lab)                             │
-│                                                                     │
-│  ┌──────────────┐   ┌──────────────────┐   ┌───────────────────┐   │
-│  │  zsa-node    │   │  crosslink-node  │   │  node-exporter    │   │
-│  │  zebrad      │   │  zebrad /        │   │  host metrics     │   │
-│  │  Testnet     │   │  zebra-crosslink │   │  :9100            │   │
-│  │  :18233 P2P  │   │  Testnet         │   └───────────────────┘   │
-│  │  :18232 RPC  │   │  :18243 P2P      │                           │
-│  │  :9999 prom  │   │  :18242 RPC      │   ┌───────────────────┐   │
-│  └──────┬───────┘   │  :9998 prom      │   │  zsa-tx-tool      │   │
-│         │           └───────┬──────────┘   │  (profile: zsa-tx)│   │
-│         │                   │              └───────────────────┘   │
-│         ▼                   ▼                                       │
-│  ┌──────────────────────────────────┐                              │
-│  │  Prometheus  :9090               │                              │
-│  │  scrapes all /metrics endpoints  │                              │
-│  └──────────────────┬───────────────┘                              │
-│                     ▼                                               │
-│  ┌──────────────────────────────────┐                              │
-│  │  Grafana  :3000                  │                              │
-│  │  "Zcash Feature Chain Overview"  │                              │
-│  └──────────────────────────────────┘                              │
-└─────────────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph host["Host machine"]
+        subgraph net["Docker network: zcash-lab"]
+            zsa["zsa-node\nzebrad · Testnet\n:18233 P2P · :18232 RPC · :9999 metrics"]
+            cross["crosslink-node\nzebrad / zebra-crosslink · Testnet\n:18243 P2P · :18242 RPC · :9998 metrics"]
+            tx["zsa-tx-tool\n(profile: zsa-tx)"]
+            ne["node-exporter\nhost metrics · :9100"]
+            prom["Prometheus\nscrapes /metrics every 15 s\n:9090"]
+            graf["Grafana\nZcash Feature Chain Overview\n:3000"]
+        end
+    end
+
+    zsa -->|metrics| prom
+    cross -->|metrics| prom
+    ne -->|metrics| prom
+    prom -->|datasource| graf
+    tx -->|RPC :18232| zsa
 ```
 
 | Service          | Description                                              | Default port(s)         |
@@ -100,6 +93,28 @@ make clean           # stops containers AND deletes volumes (resets chain state)
 
 ---
 
+## Claude Code `/grevy` command
+
+A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) slash command is
+provided at `.claude/commands/grevy.md`.  When working inside this repo with
+Claude Code, type `/grevy <action>` to let the agent perform administrative,
+monitoring, or maintenance tasks on the stack — for example:
+
+```
+/grevy status
+/grevy up
+/grevy logs zsa-node
+/grevy restart crosslink-node
+/grevy query zcash_consensus_best_tip_height
+/grevy clean
+```
+
+The command description covers all service names, ports, Makefile targets, and
+key Prometheus metrics so the agent can act immediately without further
+exploration.
+
+---
+
 ## Switching to the Crosslink-specific image
 
 The `crosslink-node` service defaults to `zfnd/zebra:latest`.  Once the
@@ -154,6 +169,9 @@ grevy-lab/
 ├── docker-compose.yml              # Orchestration – all services
 ├── Makefile                        # Convenience targets
 ├── .env.example                    # Environment variable template
+├── .claude/
+│   └── commands/
+│       └── grevy.md                # Claude Code /grevy slash command
 ├── nodes/
 │   ├── zsa-node/
 │   │   └── zebrad.toml             # Zebra config for ZSA testnet node
